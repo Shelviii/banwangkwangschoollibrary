@@ -1,6 +1,6 @@
 "use client";
 import { Box, CardHeader, Container, Stack } from "@mui/material";
-import LoginIcon from "@mui/icons-material/Login";
+import LogoutIcon from '@mui/icons-material/Logout';
 import LibraryBooksIcon from "@mui/icons-material/LibraryBooks";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -13,9 +13,9 @@ import InputLabel from "@mui/material/InputLabel";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import dayjs from "dayjs";
-import buddhistEra from "dayjs/plugin/buddhistEra";
+import buddhistEra from "dayjs/plugin/buddhistEra"; 
 import "dayjs/locale/th";
-import SaveIcon from "@mui/icons-material/Save";
+import SaveIcon from '@mui/icons-material/Save';
 import {
   LocalizationProvider,
   DatePicker,
@@ -25,7 +25,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { useState } from "react";
 
 dayjs.extend(buddhistEra); // ใช้งาน plugin
-export default function SignInPage() {
+export default function SignOutPage() {
   const [studentClass, setStudentClass] = useState("");
   const [date, setDate] = useState(dayjs());
   const [time, setTime] = useState(dayjs());
@@ -43,16 +43,10 @@ export default function SignInPage() {
     { value: "มัธยมศึกษาปีที่ 2", label: "มัธยมศึกษาปีที่ 2" },
     { value: "มัธยมศึกษาปีที่ 3", label: "มัธยมศึกษาปีที่ 3" },
   ];
-
-  const purpose = [
-    { value: "ยืมหนังสือ", label: "ยืมหนังสือ" },
-    { value: "คืนหนังสือ", label: "คืนหนังสือ" },
-    { value: "อ่านหนังสือ", label: "อ่านหนังสือ" },
-    { value: "ค้นคว้าข้อมูล", label: "ค้นคว้าข้อมูล" },
-  ];
   const handleChange = (event: SelectChangeEvent) => {
     setStudentClass(event.target.value as string);
   };
+
 
   return (
     <Container maxWidth="lg">
@@ -110,13 +104,13 @@ export default function SignInPage() {
                 flexDirection: "column",
               }}
             >
-              <LoginIcon sx={{ fontSize: 40, color: "success.main", mb: 1 }} />
+              <LogoutIcon sx={{ fontSize: 40, color: "red", mb: 1 }} />
               <Typography
                 variant="h6"
                 align="center"
                 sx={{ color: "text.primary", fontWeight: "bold" }}
               >
-                ลงชื่อเข้าใช้ห้องสมุด
+                ลงชื่อออกจากห้องสมุด
               </Typography>
             </Box>
             <Box
@@ -125,7 +119,7 @@ export default function SignInPage() {
                 justifyContent: "center",
                 alignItems: "center",
                 flexDirection: "column",
-                backgroundColor: "#E3F2FD",
+                backgroundColor: "#e5e1e1",
                 borderRadius: 4,
                 my: 2,
                 py: 2,
@@ -167,7 +161,7 @@ export default function SignInPage() {
               >
                 <Box
                   sx={{
-                    backgroundColor: "#E3F2FD",
+                    backgroundColor: "#e5e1e1",
                     borderRadius: 3,
                     p: 3,
                     width: "100%",
@@ -182,7 +176,6 @@ export default function SignInPage() {
                     value={date}
                     onChange={(newValue) => {
                       if (newValue !== null) {
-                        console.log(newValue.year());
                         setDate(newValue);
                       }
                     }}
@@ -199,24 +192,6 @@ export default function SignInPage() {
                   />
                 </Box>
               </LocalizationProvider>
-              <FormControl variant="standard" sx={{ mb: 2, width: "80%" }}>
-                <InputLabel id="demo-simple-select-label">
-                  จุดประสงค์การเข้าใช้
-                </InputLabel>
-                <Select
-                  labelId="demo-simple-select-label"
-                  id="demo-simple-select"
-                  value={studentClass}
-                  label="จุดประสงค์การเข้าใช้"
-                  onChange={handleChange}
-                >
-                  {purpose.map((option) => (
-                    <MenuItem key={option.value} value={option.value}>
-                      {option.label}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
             </Box>
             <Box
               sx={{

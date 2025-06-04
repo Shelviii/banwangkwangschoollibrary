@@ -94,7 +94,7 @@ export default function Home() {
               </Button>
               <Button
                 variant="contained"
-                href="#contained-buttons"
+                href="signout"
                 color="error"
                 sx={{
                   width: "40%",
