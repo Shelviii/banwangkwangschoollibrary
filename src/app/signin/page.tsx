@@ -1,5 +1,12 @@
 "use client";
-import { Box, CardHeader, Container, Stack } from "@mui/material";
+import {
+  Box,
+  CardHeader,
+  Container,
+  IconButton,
+  InputAdornment,
+  Stack,
+} from "@mui/material";
 import LoginIcon from "@mui/icons-material/Login";
 import LibraryBooksIcon from "@mui/icons-material/LibraryBooks";
 import Card from "@mui/material/Card";
@@ -23,10 +30,16 @@ import {
 } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { useState } from "react";
+import SearchIcon from "@mui/icons-material/Search";
+import axios from "axios";
 
 dayjs.extend(buddhistEra); // ใช้งาน plugin
 export default function SignInPage() {
+  const [studentId, setStudentId] = useState("");
+  const [studentName, setStudentName] = useState("");
   const [studentClass, setStudentClass] = useState("");
+  const [personalId, setPersonalId] = useState("");
+  const [purpose, setPurpose] = useState("");
   const [date, setDate] = useState(dayjs());
   const [time, setTime] = useState(dayjs());
 
@@ -44,14 +57,52 @@ export default function SignInPage() {
     { value: "มัธยมศึกษาปีที่ 3", label: "มัธยมศึกษาปีที่ 3" },
   ];
 
-  const purpose = [
+  const purposeList = [
     { value: "ยืมหนังสือ", label: "ยืมหนังสือ" },
     { value: "คืนหนังสือ", label: "คืนหนังสือ" },
     { value: "อ่านหนังสือ", label: "อ่านหนังสือ" },
     { value: "ค้นคว้าข้อมูล", label: "ค้นคว้าข้อมูล" },
   ];
   const handleChange = (event: SelectChangeEvent) => {
-    setStudentClass(event.target.value as string);
+    setPurpose(event.target.value as string);
+  };
+
+  const toThaiYear = (year: number) => {
+    return year + 543; // แปลงปี ค.ศ. เป็น พ.ศ.
+  };
+
+  const handleSearch = () => {
+    console.log(studentId);
+    axios
+      .get(`/api/student?studentId=${studentId}`)
+      .then((response) => {
+        const data = response.data.data;
+        setStudentName(data.name);
+        setStudentClass(data.studentClass);
+        setPersonalId(data.personalId);
+      })
+      .catch((err) => {
+        console.error("Fetch student failed:", err);
+      });
+  };
+
+  const onSubmit = () => {
+    axios
+      .post("/api/student", {
+        studentId,
+        personalId,
+        name: studentName,
+        studentClass,
+        purpose,
+        date: date.toString(),
+        time: time.toString(),
+      })
+      .then((res) => {
+        console.log("Sign-in success", res.data);
+      })
+      .catch((err) => {
+        console.error("Sign-in failed", err);
+      });
   };
 
   return (
@@ -136,12 +187,23 @@ export default function SignInPage() {
                 label="เลขประจำตัวนักเรียน"
                 variant="standard"
                 sx={{ mb: 2, width: "80%" }}
+                onChange={(e) => setStudentId(e.target.value)}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={handleSearch}>
+                        <SearchIcon />
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
               />
               <TextField
                 id="standard-basic"
                 label="ชื่อ-นามสกุล"
                 variant="standard"
                 sx={{ mb: 2, width: "80%" }}
+                value={studentName}
               />
               <FormControl variant="standard" sx={{ mb: 2, width: "80%" }}>
                 <InputLabel id="demo-simple-select-label">
@@ -182,9 +244,13 @@ export default function SignInPage() {
                     value={date}
                     onChange={(newValue) => {
                       if (newValue !== null) {
-                        console.log(newValue.year());
                         setDate(newValue);
                       }
+                    }}
+                    slotProps={{
+                      textField: {
+                        helperText: `ปี พ.ศ. ${toThaiYear(date.year())}`,
+                      },
                     }}
                   />
                   <TimePicker
@@ -206,11 +272,11 @@ export default function SignInPage() {
                 <Select
                   labelId="demo-simple-select-label"
                   id="demo-simple-select"
-                  value={studentClass}
+                  value={purpose}
                   label="จุดประสงค์การเข้าใช้"
                   onChange={handleChange}
                 >
-                  {purpose.map((option) => (
+                  {purposeList.map((option) => (
                     <MenuItem key={option.value} value={option.value}>
                       {option.label}
                     </MenuItem>
@@ -231,6 +297,7 @@ export default function SignInPage() {
                 color="success"
                 startIcon={<SaveIcon />}
                 sx={{ width: "50%", mb: 2 }}
+                onClick={onSubmit}
               >
                 บันทึก
               </Button>
