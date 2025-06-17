@@ -17,14 +17,3 @@ export async function POST(req: Request) {
 
   return Response.json(gData);
 }
-
-export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url);
-  const studentId = searchParams.get("studentId");
-
-  const googleUrl = `https://script.google.com/macros/s/${process.env.NEXT_PUBLIC_SPREADSHEET_ID}/exec?studentId=${studentId}`;
-  const res = await fetch(googleUrl);
-  const data = await res.json();
-
-  return Response.json(data);
-}

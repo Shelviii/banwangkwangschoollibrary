@@ -81,7 +81,7 @@ export default function SignInPage() {
       },
     });
     axios
-      .get(`/api/student?studentId=${studentId}`)
+      .get(`https://script.google.com/macros/s/${process.env.NEXT_PUBLIC_SPREADSHEET_ID}/exec?studentId=${studentId}`)
       .then((response) => {
         const data = response.data.data;
         setStudentName(data.name);
