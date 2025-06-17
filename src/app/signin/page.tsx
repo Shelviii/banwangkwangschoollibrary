@@ -32,6 +32,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { useState } from "react";
 import SearchIcon from "@mui/icons-material/Search";
 import axios from "axios";
+import Swal from "sweetalert2";
 
 dayjs.extend(buddhistEra); // ใช้งาน plugin
 export default function SignInPage() {
@@ -72,7 +73,13 @@ export default function SignInPage() {
   };
 
   const handleSearch = () => {
-    console.log(studentId);
+    Swal.fire({
+      title: "กำลังค้นหาข้อมูลนักเรียน...",
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
     axios
       .get(`/api/student?studentId=${studentId}`)
       .then((response) => {
@@ -81,27 +88,59 @@ export default function SignInPage() {
         setStudentClass(data.studentClass);
         setPersonalId(data.personalId);
       })
+      .then(() => {
+        Swal.close();
+      })
       .catch((err) => {
-        console.error("Fetch student failed:", err);
+        Swal.fire({
+          icon: "error",
+          title: err,
+          showConfirmButton: true,
+          timer: 3000,
+        });
       });
   };
 
   const onSubmit = () => {
+    Swal.fire({
+      title: "กำลังส่งข้อมูล...",
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
     axios
-      .post("/api/student", {
+      .post("/api/student?action=signin", {
         studentId,
         personalId,
         name: studentName,
         studentClass,
         purpose,
-        date: date.toString(),
-        time: time.toString(),
+        date: `${date.date()}/${date.month() + 1}/${date.year() + 543}`,
+        time: time.format("HH:mm:ss"),
       })
-      .then((res) => {
-        console.log("Sign-in success", res.data);
+      .then(() => {
+        Swal.fire({
+          icon: "success",
+          title: "ส่งข้อมูลแล้ว",
+          showConfirmButton: false,
+          timer: 1500,
+        });
+        setStudentId("");
+        setStudentClass("");
+        setStudentName("");
+        setPurpose("");
+        setPersonalId("");
+        setDate(dayjs());
+        setTime(dayjs());
       })
       .catch((err) => {
-        console.error("Sign-in failed", err);
+        Swal.fire({
+          icon: "error",
+          title: err,
+          showConfirmButton: true,
+          timer: 3000,
+        });
       });
   };
 
@@ -187,6 +226,7 @@ export default function SignInPage() {
                 label="เลขประจำตัวนักเรียน"
                 variant="standard"
                 sx={{ mb: 2, width: "80%" }}
+                value={studentId}
                 onChange={(e) => setStudentId(e.target.value)}
                 InputProps={{
                   endAdornment: (

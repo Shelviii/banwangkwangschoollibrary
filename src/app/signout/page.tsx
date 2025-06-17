@@ -1,5 +1,5 @@
 "use client";
-import { Box, CardHeader, Container, Stack } from "@mui/material";
+import { Box, CardHeader, Container, IconButton, InputAdornment, Stack } from "@mui/material";
 import LogoutIcon from '@mui/icons-material/Logout';
 import LibraryBooksIcon from "@mui/icons-material/LibraryBooks";
 import Card from "@mui/material/Card";
@@ -23,13 +23,18 @@ import {
 } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { useState } from "react";
+import SearchIcon from "@mui/icons-material/Search";
+import axios from "axios";
+import Swal from "sweetalert2";
 
 dayjs.extend(buddhistEra); // ใช้งาน plugin
 export default function SignOutPage() {
-  const [studentClass, setStudentClass] = useState("");
-  const [date, setDate] = useState(dayjs());
-  const [time, setTime] = useState(dayjs());
-
+    const [studentId, setStudentId] = useState("");
+    const [studentName, setStudentName] = useState("");
+    const [studentClass, setStudentClass] = useState("");
+    const [personalId, setPersonalId] = useState("");
+    const [date, setDate] = useState(dayjs());
+    const [time, setTime] = useState(dayjs());
   const studentClasses = [
     { value: "อนุบาลศึกษาปีที่ 2", label: "อนุบาลศึกษาปีที่ 2" },
     { value: "อนุบาลศึกษาปีที่ 3", label: "อนุบาลศึกษาปีที่ 3" },
@@ -47,6 +52,75 @@ export default function SignOutPage() {
     setStudentClass(event.target.value as string);
   };
 
+   const handleSearch = () => {
+      Swal.fire({
+        title: "กำลังค้นหาข้อมูลนักเรียน...",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+      axios
+        .get(`/api/student?studentId=${studentId}`)
+        .then((response) => {
+          const data = response.data.data;
+          setStudentName(data.name);
+          setStudentClass(data.studentClass);
+          setPersonalId(data.personalId);
+        })
+        .then(() => {
+          Swal.close();
+        })
+        .catch((err) => {
+          Swal.fire({
+            icon: "error",
+            title: err,
+            showConfirmButton: true,
+            timer: 3000,
+          });
+        });
+    };
+  
+    const onSubmit = () => {
+      Swal.fire({
+        title: "กำลังส่งข้อมูล...",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+      axios
+        .post("/api/student?action=signout", {
+          studentId,
+          personalId,
+          name: studentName,
+          studentClass,
+          date: `${date.date()}/${date.month() + 1}/${date.year() + 543}`,
+          time: time.format("HH:mm:ss"),
+        })
+        .then(() => {
+          Swal.fire({
+            icon: "success",
+            title: "ส่งข้อมูลแล้ว",
+            showConfirmButton: false,
+            timer: 1500,
+          });
+          setStudentId("");
+          setStudentClass("");
+          setStudentName("");
+          setPersonalId("");
+          setDate(dayjs());
+          setTime(dayjs());
+        })
+        .catch((err) => {
+          Swal.fire({
+            icon: "error",
+            title: err,
+            showConfirmButton: true,
+            timer: 3000,
+          });
+        });
+    };
 
   return (
     <Container maxWidth="lg">
@@ -125,15 +199,27 @@ export default function SignOutPage() {
                 py: 2,
               }}
             >
-              <TextField
+                  <TextField
                 id="standard-basic"
                 label="เลขประจำตัวนักเรียน"
                 variant="standard"
                 sx={{ mb: 2, width: "80%" }}
+                value={studentId}
+                onChange={(e) => setStudentId(e.target.value)}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={handleSearch}>
+                        <SearchIcon />
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
               />
               <TextField
                 id="standard-basic"
                 label="ชื่อ-นามสกุล"
+                value={studentName}
                 variant="standard"
                 sx={{ mb: 2, width: "80%" }}
               />
@@ -206,6 +292,7 @@ export default function SignOutPage() {
                 color="success"
                 startIcon={<SaveIcon />}
                 sx={{ width: "50%", mb: 2 }}
+                onClick={onSubmit}
               >
                 บันทึก
               </Button>
